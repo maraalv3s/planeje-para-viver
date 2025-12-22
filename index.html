@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Descubra os padrões comportamentais que estão sabotando suas finanças. Diagnóstico gratuito baseado em Economia Comportamental.">
+    <meta name="keywords" content="finanças pessoais, planejamento financeiro, dívidas, economia comportamental">
+    <meta property="og:title" content="Planeje Para Viver - Diagnóstico Financeiro Gratuito">
+    <meta property="og:description" content="Descubra o que está impedindo você de sair das dívidas e começar a poupar">
+    <meta property="og:type" content="website">
+    <title>Planeje Para Viver - Diagnóstico Financeiro Gratuito</title>
+    
+    <!-- Google Analytics - SUBSTITUA SEU-ID-AQUI pelo seu ID do GA -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=SEU-ID-AQUI"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'SEU-ID-AQUI');
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+        }
+        
+        .leaf-icon {
+            display: inline-block;
+            animation: grow 2s ease-in-out infinite;
+        }
+        
+        @keyframes grow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-50 to-teal-50 min-h-screen">
+    <div id="app"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const ShareButton = () => {
+            const shareUrl = window.location.href;
+            const shareText = "Fiz o diagnóstico financeiro do Planeje Para Viver e descobri padrões que estavam sabotando minhas finanças! Faça o seu:";
+            
+            const handleShare = async () => {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: 'Planeje Para Viver - Diagnóstico Financeiro',
+                            text: shareText,
+                            url: shareUrl
+                        });
+                    } catch (err) {
+                        console.log('Compartilhamento cancelado');
+                    }
+                } else {
+                    // Fallback para copiar link
+                    navigator.clipboard.writeText(shareUrl);
+                    alert('Link copiado! Compartilhe com seus amigos 🌿');
+                }
+            };
+
+            return (
+                <button
+                    onClick={handleShare}
+                    className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors text-sm"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    Compartilhar
+                </button>
+            );
+        };
+
+        const DiagnosticApp = () => {
+            const [currentSection, setCurrentSection] = useState(0);
+            const [answers, setAnswers] = useState({});
+            const [showResults, setShowResults] = useState(false);
+            const [emailSent, setEmailSent] = useState(false);
+            const [userEmail, setUserEmail] = useState('');
+
+            const sections = [
+                {
+                    id: 'aversao-perda',
+                    title: 'Aversão à Perda',
+                    icon: '⚠️',
+                    description: 'Dificuldade de abrir mão de coisas, mesmo quando prejudicam suas finanças',
+                    questions: [
+                        {
+                            id: 'q1',
+                            text: 'Você tem assinaturas (streaming, academia, apps) que não usa, mas não cancela?',
+                            options: [
+                                { value: 5, label: 'Sim, várias. Fico pensando "e se eu precisar?"' },
+                                { value: 4, label: 'Sim, algumas. Sempre deixo para cancelar depois' },
+                                { value: 3, label: 'Tenho uma ou duas que não uso muito' },
+                                { value: 2, label: 'Raramente mantenho algo que não uso' },
+                                { value: 1, label: 'Cancelo imediatamente o que não uso' }
+                            ]
+                        },
+                        {
+                            id: 'q2',
+                            text: 'Como você se sente ao pensar em reduzir um gasto que está acostumado (ex: delivery, cafézinho)?',
+                            options: [
+                                { value: 5, label: 'Muito difícil, sinto que estou perdendo qualidade de vida' },
+                                { value: 4, label: 'Desconfortável, prefiro cortar outras coisas' },
+                                { value: 3, label: 'Depende do quanto preciso economizar' },
+                                { value: 2, label: 'Consigo abrir mão sem grandes problemas' },
+                                { value: 1, label: 'Vejo como uma escolha racional, não como perda' }
+                            ]
+                        },
+                        {
+                            id: 'q3',
+                            text: 'Você evita olhar suas dívidas ou saldo bancário quando sabe que a situação está ruim?',
+                            options: [
+                                { value: 5, label: 'Sim, sempre. Me dá ansiedade só de pensar' },
+                                { value: 4, label: 'Frequentemente evito conferir' },
+                                { value: 3, label: 'Às vezes postergo para não me estressar' },
+                                { value: 2, label: 'Raramente evito, mas acontece' },
+                                { value: 1, label: 'Não, encaro a realidade para resolver' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'excesso-confianca',
+                    title: 'Excesso de Confiança',
+                    icon: '📈',
+                    description: 'Subestimar gastos e superestimar sua capacidade de controle financeiro',
+                    questions: [
+                        {
+                            id: 'q4',
+                            text: 'Quando você faz uma compra parcelada, como pensa sobre o pagamento futuro?',
+                            options: [
+                                { value: 5, label: '"Mês que vem dou um jeito", sempre acho que vai sobrar' },
+                                { value: 4, label: 'Confio que vou conseguir pagar, mas nem sempre sobra' },
+                                { value: 3, label: 'Fico um pouco preocupado, mas geralmente dá certo' },
+                                { value: 2, label: 'Calculo antes se realmente cabe no orçamento' },
+                                { value: 1, label: 'Só parcelo se tenho certeza absoluta que posso pagar' }
+                            ]
+                        },
+                        {
+                            id: 'q5',
+                            text: 'No início do mês, você costuma pensar:',
+                            options: [
+                                { value: 5, label: '"Este mês vai sobrar dinheiro!" (mas nunca sobra)' },
+                                { value: 4, label: '"Vou conseguir economizar" (mas surgem imprevistos)' },
+                                { value: 3, label: 'Nem muito otimista, nem pessimista' },
+                                { value: 2, label: 'Já espero que seja apertado' },
+                                { value: 1, label: 'Planejo realisticamente com base nos meses anteriores' }
+                            ]
+                        },
+                        {
+                            id: 'q6',
+                            text: 'Gastos pequenos do dia-a-dia (lanche, Uber, apps) na sua percepção:',
+                            options: [
+                                { value: 5, label: 'Não fazem diferença, são só "trocos"' },
+                                { value: 4, label: 'Impactam pouco, não me preocupo muito' },
+                                { value: 3, label: 'Sei que somam, mas não controlo rigorosamente' },
+                                { value: 2, label: 'Tento controlar, pois sei que pesam' },
+                                { value: 1, label: 'Registro tudo, sei exatamente quanto gasto' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'ancoragem',
+                    title: 'Ancoragem',
+                    icon: '🎯',
+                    description: 'Basear decisões em referências erradas ou irrelevantes',
+                    questions: [
+                        {
+                            id: 'q7',
+                            text: 'Ao ver uma promoção "De R$ 500 por R$ 300", você pensa:',
+                            options: [
+                                { value: 5, label: 'É uma pechincha! Estou economizando R$ 200!' },
+                                { value: 4, label: 'Bom desconto, vale a pena comprar' },
+                                { value: 3, label: 'Considero o desconto, mas também se preciso' },
+                                { value: 2, label: 'Questiono se realmente vale R$ 500' },
+                                { value: 1, label: 'Ignoro o "De-Por", avalio se vale R$ 300' }
+                            ]
+                        },
+                        {
+                            id: 'q8',
+                            text: 'Seu padrão de gastos é influenciado pelo quanto seus amigos/família gastam?',
+                            options: [
+                                { value: 5, label: 'Muito. "Se eles podem, eu também posso"' },
+                                { value: 4, label: 'Bastante. Me sinto mal gastando muito menos' },
+                                { value: 3, label: 'Um pouco, mas tento não comparar' },
+                                { value: 2, label: 'Pouco, cada um tem sua realidade' },
+                                { value: 1, label: 'Não, vivo minha realidade financeira' }
+                            ]
+                        },
+                        {
+                            id: 'q9',
+                            text: 'Você define quanto pode gastar em algo baseado em:',
+                            options: [
+                                { value: 5, label: 'O que gastei antes na mesma coisa' },
+                                { value: 4, label: 'O que as pessoas normalmente gastam nisso' },
+                                { value: 3, label: 'Uma mistura de referências e condições atuais' },
+                                { value: 2, label: 'Principalmente no meu orçamento atual' },
+                                { value: 1, label: 'Só no que posso pagar SEM comprometer outras áreas' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'efeito-manada',
+                    title: 'Efeito Manada',
+                    icon: '🛒',
+                    description: 'Consumir influenciado pelo que outros fazem, não pela sua necessidade',
+                    questions: [
+                        {
+                            id: 'q10',
+                            text: 'Quando todos estão comprando algo (novo celular, roupa da moda), você:',
+                            options: [
+                                { value: 5, label: 'Sinto urgência de comprar também, senão fico para trás' },
+                                { value: 4, label: 'Fico tentado e geralmente acabo comprando' },
+                                { value: 3, label: 'Considero, mas não sempre compro' },
+                                { value: 2, label: 'Raramente me influencio' },
+                                { value: 1, label: 'Só compro se realmente precisar, independente dos outros' }
+                            ]
+                        },
+                        {
+                            id: 'q11',
+                            text: 'Suas decisões de parcelar compras são influenciadas por:',
+                            options: [
+                                { value: 5, label: '"Todo mundo parcela, é normal"' },
+                                { value: 4, label: 'Ver amigos parcelando me deixa mais confortável' },
+                                { value: 3, label: 'Parcelo quando vejo que é comum' },
+                                { value: 2, label: 'Decido independente do que outros fazem' },
+                                { value: 1, label: 'Evito parcelar, mesmo que seja comum' }
+                            ]
+                        },
+                        {
+                            id: 'q12',
+                            text: 'Em grupos (família, amigos), quando decidem ir a um restaurante caro:',
+                            options: [
+                                { value: 5, label: 'Vou junto mesmo sem condições, "depois vejo"' },
+                                { value: 4, label: 'Vou e me preocupo depois com o cartão' },
+                                { value: 3, label: 'Vou, mas fico desconfortável' },
+                                { value: 2, label: 'Sugiro alternativas mais baratas' },
+                                { value: 1, label: 'Declino educadamente se não cabe no orçamento' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'contabilidade-mental',
+                    title: 'Contabilidade Mental',
+                    icon: '💰',
+                    description: 'Tratar dinheiro de forma diferente dependendo da origem ou destino',
+                    questions: [
+                        {
+                            id: 'q13',
+                            text: 'Dinheiro "extra" (13º, bônus, presente) é tratado diferente do salário?',
+                            options: [
+                                { value: 5, label: 'Sim! É "dinheiro extra", posso gastar à vontade' },
+                                { value: 4, label: 'Geralmente gasto mais facilmente' },
+                                { value: 3, label: 'Às vezes uso para "me dar um presente"' },
+                                { value: 2, label: 'Tento usar com responsabilidade' },
+                                { value: 1, label: 'Trato igual ao salário, vai para as prioridades' }
+                            ]
+                        },
+                        {
+                            id: 'q14',
+                            text: 'Você divide mentalmente o salário em "caixinhas" (aluguel, comida, lazer)?',
+                            options: [
+                                { value: 5, label: 'Sim, e gasto cada caixinha até o fim' },
+                                { value: 4, label: 'Sim, e raramente economizo de uma caixinha' },
+                                { value: 3, label: 'Sim, mas às vezes transfiro entre caixinhas' },
+                                { value: 2, label: 'Faço isso, mas com flexibilidade' },
+                                { value: 1, label: 'Vejo todo dinheiro disponível como um montante único' }
+                            ]
+                        },
+                        {
+                            id: 'q15',
+                            text: 'Ao economizar em uma área (ex: cozinhar em casa), você:',
+                            options: [
+                                { value: 5, label: 'Sente que "merece" gastar o que economizou em outra coisa' },
+                                { value: 4, label: 'Frequentemente gasto a economia em algo' },
+                                { value: 3, label: 'Às vezes uso como "permissão" para outro gasto' },
+                                { value: 2, label: 'Raramente penso assim' },
+                                { value: 1, label: 'A economia vira poupança, não outro gasto' }
+                            ]
+                        }
+                    ]
+                }
+            ];
+
+            const getRecommendations = (biasId, level) => {
+                const recs = {
+                    'aversao-perda': {
+                        'Alto': [
+                            'Liste todas assinaturas e cancele HOJE as que não usou no último mês',
+                            'Use a regra: "Compraria de novo se não tivesse?" Se não, cancele',
+                            'Reserve 1 dia por mês para revisar gastos recorrentes sem peso emocional',
+                            'Encare sua situação financeira: anote TODAS as dívidas num papel'
+                        ],
+                        'Moderado': [
+                            'Faça revisão trimestral de assinaturas e serviços',
+                            'Antes de manter algo, pergunte: "Isto me aproxima dos meus objetivos?"',
+                            'Configure alertas no banco para acompanhar saldo semanalmente'
+                        ],
+                        'Baixo': [
+                            'Continue sua abordagem racional',
+                            'Mantenha o hábito de revisar gastos regularmente'
+                        ]
+                    },
+                    'excesso-confianca': {
+                        'Alto': [
+                            'PROIBIÇÃO de 30 dias: ZERO parcelamento novo. Só à vista',
+                            'Anote HOJE quanto gastou nos últimos 3 meses (real, não estimado)',
+                            'Calcule: some TODAS as parcelas que vai pagar nos próximos 12 meses',
+                            'Use app de controle (GuiaBolso, Mobills) - precisa de dados reais'
+                        ],
+                        'Moderado': [
+                            'Registre gastos por 1 semana - vai se surpreender com o total',
+                            'Antes de parcelar, calcule: parcela × meses = valor real',
+                            'Questione seu "vai dar certo" com base no que aconteceu mês passado'
+                        ],
+                        'Baixo': [
+                            'Sua consciência financeira é um diferencial',
+                            'Continue registrando e planejando com base em dados reais'
+                        ]
+                    },
+                    'ancoragem': {
+                        'Alto': [
+                            'Em promoções, pergunte: "Eu PRECISO disto? Compraria sem promoção?"',
+                            'Bloqueie por 30 dias as lojas que mais te fazem gastar',
+                            'Antes de qualquer compra, pesquise 3 preços',
+                            'Crie SEU padrão de gastos baseado na SUA renda'
+                        ],
+                        'Moderado': [
+                            'Evite "vitrines" quando não precisa comprar nada',
+                            'Compare com sua capacidade de pagamento, não com preços antigos',
+                            'Lembre-se: economia só é economia se você ia comprar de qualquer forma'
+                        ],
+                        'Baixo': [
+                            'Continue avaliando valor real, não preços de referência',
+                            'Sua independência de pensamento é valiosa'
+                        ]
+                    },
+                    'efeito-manada': {
+                        'Alto': [
+                            'Teste dos 30 dias: quando quiser algo que "todo mundo tem", espere 30 dias',
+                            'Silencie stories de consumo nas redes sociais por 30 dias',
+                            'Pratique dizer: "Não cabe no meu orçamento agora" sem vergonha',
+                            'Liste 3 coisas que comprou porque "todo mundo tinha" e se arrependeu'
+                        ],
+                        'Moderado': [
+                            'Questione: "Eu quero ou todo mundo quer?"',
+                            'Crie orçamento ANTES de sair com amigos',
+                            'Sugira programas gratuitos com frequência'
+                        ],
+                        'Baixo': [
+                            'Sua independência financeira é admirável',
+                            'Continue priorizando suas necessidades sobre pressões sociais'
+                        ]
+                    },
+                    'contabilidade-mental': {
+                        'Alto': [
+                            'Regra nova: 13º e bônus vão PRIMEIRO para dívidas/reserva',
+                            'Unifique visão: abra planilha e coloque TODO seu dinheiro junto',
+                            'Economizou R$ 50? Vai para a reserva, não para "recompensa"',
+                            'Dinheiro é dinheiro, não importa de onde veio'
+                        ],
+                        'Moderado': [
+                            'Quando receber dinheiro extra, durma 1 noite antes de decidir',
+                            'Economias devem virar poupança, não permissão para gastar',
+                            'Simplifique: tenha 1 visão, não várias "caixinhas" mentais'
+                        ],
+                        'Baixo': [
+                            'Sua visão integrada das finanças é um diferencial',
+                            'Continue tratando todo dinheiro com o mesmo critério'
+                        ]
+                    }
+                };
+                return recs[biasId]?.[level] || [];
+            };
+
+            const calculateResults = () => {
+                const biasScores = {};
+                sections.forEach(section => {
+                    const sectionAnswers = section.questions
+                        .map(q => answers[q.id] || 0)
+                        .filter(val => val > 0);
+                    
+                    if (sectionAnswers.length > 0) {
+                        const avgScore = sectionAnswers.reduce((a, b) => a + b, 0) / sectionAnswers.length;
+                        biasScores[section.id] = {
+                            score: avgScore,
+                            title: section.title,
+                            icon: section.icon,
+                            description: section.description,
+                            level: avgScore >= 4 ? 'Alto' : avgScore >= 3 ? 'Moderado' : 'Baixo',
+                            color: avgScore >= 4 ? 'bg-red-500' : avgScore >= 3 ? 'bg-yellow-500' : 'bg-green-500'
+                        };
+                    }
+                });
+                return biasScores;
+            };
+
+            const handleAnswer = (questionId, value) => {
+                setAnswers(prev => ({...prev, [questionId]: value}));
+            };
+
+            const handleEmailSubmit = (e) => {
+                e.preventDefault();
+                if (!userEmail) return;
+                
+                const results = calculateResults();
+                const resultText = Object.entries(results)
+                    .map(([id, data]) => `${data.title}: ${data.score.toFixed(1)}/5.0 (${data.level})`)
+                    .join('\n');
+                
+                // Usando FormSubmit - VOCÊ PRECISA TROCAR SEU-EMAIL@EXAMPLE.COM
+                const form = e.target;
+                form.submit();
+                setEmailSent(true);
+            };
+
+            const currentSectionData = sections[currentSection];
+            const progress = ((currentSection + 1) / sections.length) * 100;
+            const allQuestionsAnswered = currentSectionData?.questions.every(q => answers[q.id]);
+
+            if (showResults) {
+                const results = calculateResults();
+                const overallScore = Object.values(results).reduce((sum, r) => sum + r.score, 0) / Object.keys(results).length;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-4 md:p-8">
+                        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                            {/* Header */}
+                            <div className="text-center mb-8">
+                                <div className="text-6xl mb-4 leaf-icon">🌿</div>
+                                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                                    Seu Diagnóstico Está Pronto!
+                                </h1>
+                                <p className="text-gray-600">Entenda seus padrões de comportamento financeiro</p>
+                            </div>
+
+                            {/* Score Geral */}
+                            <div className="mb-8 p-6 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl text-white">
+                                <h3 className="text-xl font-semibold mb-2">Score de Comportamento Financeiro</h3>
+                                <div className="flex items-center justify-between flex-wrap gap-4">
+                                    <div className="text-5xl font-bold">{overallScore.toFixed(1)}/5.0</div>
+                                    <div className="text-right">
+                                        <p className="text-sm opacity-90">
+                                            {overallScore >= 4 ? 'Muitos padrões prejudicando suas finanças' : 
+                                             overallScore >= 3 ? 'Alguns comportamentos para melhorar' : 
+                                             'Bom controle dos comportamentos financeiros'}
+                                        </p>
+                                        <p className="text-xs opacity-75 mt-1">
+                                            Quanto menor o score, melhor seu controle
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Resultados por Viés */}
+                            <div className="space-y-6 mb-8">
+                                {Object.entries(results).map(([biasId, data]) => (
+                                    <div key={biasId} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
+                                        <div className="flex items-start justify-between mb-4 flex-wrap gap-4">
+                                            <div className="flex items-start gap-3">
+                                                <span className="text-3xl">{data.icon}</span>
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-gray-800 mb-1">{data.title}</h3>
+                                                    <p className="text-sm text-gray-600">{data.description}</p>
+                                                </div>
+                                            </div>
+                                            <span className={`${data.color} text-white px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap`}>
+                                                {data.level}
+                                            </span>
+                                        </div>
+
+                                        <div className="mb-4">
+                                            <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                                <span>Impacto no seu dia-a-dia</span>
+                                                <span>{data.score.toFixed(1)}/5.0</span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-3">
+                                                <div 
+                                                    className={`${data.color} h-3 rounded-full transition-all duration-500`}
+                                                    style={{ width: `${(data.score / 5) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-emerald-50 rounded-lg p-4">
+                                            <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+                                                <span className="mr-2">🎯</span>
+                                                Ações Práticas para Você
+                                            </h4>
+                                            <ul className="space-y-2">
+                                                {getRecommendations(biasId, data.level).map((rec, idx) => (
+                                                    <li key={idx} className="flex items-start text-sm text-gray-700">
+                                                        <span className="text-emerald-600 mr-2 font-bold">→</span>
+                                                        <span>{rec}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Próximos Passos */}
+                            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-lg p-6 mb-8">
+                                <h3 className="font-bold text-gray-800 mb-3 flex items-center">
+                                    <span className="mr-2">💡</span>
+                                    Por Onde Começar?
+                                </h3>
+                                <ol className="list-decimal list-inside space-y-2 text-gray-700">
+                                    <li>Escolha o comportamento com maior score (seu maior desafio)</li>
+                                    <li>Implemente APENAS 1 recomendação esta semana</li>
+                                    <li>Anote os resultados por 7 dias</li>
+                                    <li>Na próxima semana, adicione mais 1 recomendação</li>
+                                    <li>Refaça este teste em 2 meses para ver sua evolução</li>
+                                </ol>
+                            </div>
+
+                            {/* Captura de Email Opcional */}
+                            {!emailSent ? (
+                                <div className="bg-white border-2 border-emerald-200 rounded-xl p-6 mb-6">
+                                    <h3 className="font-bold text-gray-800 mb-2 flex items-center">
+                                        <span className="mr-2">📧</span>
+                                        Quer receber uma cópia por email?
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Vou te enviar o resumo completo + dicas extras + materiais de educação financeira
+                                    </p>
+                                    <form 
+                                        action="https://formsubmit.co/maraalves.ftg@gmail.com" 
+                                        method="POST"
+                                        onSubmit={handleEmailSubmit}
+                                        className="flex gap-3 flex-wrap"
+                                    >
+                                        <input type="hidden" name="_subject" value="Novo Diagnóstico - Planeje Para Viver" />
+                                        <input type="hidden" name="_template" value="table" />
+                                        <input type="hidden" name="_captcha" value="false" />
+                                        <input 
+                                            type="email" 
+                                            name="email"
+                                            value={userEmail}
+                                            onChange={(e) => setUserEmail(e.target.value)}
+                                            placeholder="seu-email@exemplo.com"
+                                            required
+                                            className="flex-1 min-w-[200px] px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-emerald-500 focus:outline-none"
+                                        />
+                                        <textarea 
+                                            name="resultados" 
+                                            value={`Score Geral: ${overallScore.toFixed(1)}/5.0\n\n` + Object.entries(results).map(([id, data]) => `${data.icon} ${data.title}: ${data.score.toFixed(1)}/5.0 (${data.level})`).join('\n')}
+                                            hidden
+                                        />
+                                        <button 
+                                            type="submit"
+                                            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold"
+                                        >
+                                            Enviar Cópia
+                                        </button>
+                                    </form>
+                                </div>
+                            ) : (
+                                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6 text-center">
+                                    <span className="text-4xl mb-2 block">✅</span>
+                                    <p className="font-semibold text-gray-800">Email enviado com sucesso!</p>
+                                    <p className="text-sm text-gray-600">Verifique sua caixa de entrada</p>
+                                </div>
+                            )}
+
+                            {/* CTA Final */}
+                            <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-6 mb-6 text-center">
+                                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                                    Gostou do diagnóstico?
+                                </h3>
+                                <p className="text-gray-600 mb-4">
+                                    Quer ajuda personalizada para transformar esses insights em ações concretas?
+                                </p>
+                                <div className="flex gap-3 justify-center flex-wrap">
+                                    {/* SUBSTITUA OS LINKS ABAIXO PELOS SEUS */}
+                                    <a 
+                                        href="https://wa.me/5585999999999?text=Olá!%20Fiz%20o%20diagnóstico%20e%20gostaria%20de%20saber%20mais" 
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold"
+                                    >
+                                        💬 Entre em Contato
+                                    </a>
+                                    <button 
+                                        onClick={() => window.print()}
+                                        className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+                                    >
+                                        🖨️ Imprimir PDF
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Botões Ação */}
+                            <div className="flex gap-4 justify-center flex-wrap no-print">
+                                <button
+                                    onClick={() => {
+                                        setShowResults(false);
+                                        setCurrentSection(0);
+                                        setAnswers({});
+                                        setEmailSent(false);
+                                        setUserEmail('');
+                                        window.scrollTo(0, 0);
+                                    }}
+                                    className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+                                >
+                                    ↻ Refazer Teste
+                                </button>
+                                <ShareButton />
+                            </div>
+
+                            {/* Footer */}
+                            <div className="mt-12 pt-8 border-t border-gray-200 text-center">
+                                <div className="text-2xl mb-3">🌿</div>
+                                <p className="text-xl font-bold text-gray-800 mb-1">
+                                    "Não sobreviva. Viva."
+                                </p>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Diagnóstico criado por <strong>Mara Alves</strong><br />
+                                    🌿 Planeje para viver — Finanças Pessoais & Planejamento
+                                </p>
+                                <div className="flex gap-6 justify-center items-center flex-wrap text-sm text-gray-600">
+                                    <a href="https://wa.me/5585999999999" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 transition-colors">
+                                        📱 WhatsApp
+                                    </a>
+                                    <a href="mailto:maraalves.ftg@gmail.com" className="hover:text-emerald-600 transition-colors">
+                                        📧 Email
+                                    </a>
+                                    <a href="https://instagram.com/maraalv3s" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 transition-colors">
+                                        📷 Instagram
+                                    </a>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-4">
+                                    © 2024 Planeje Para Viver • Baseado em pesquisas de Daniel Kahneman e Richard Thaler
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Tela de Questões
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 p-4 md:p-8">
+                    <div className="max-w-3xl mx-auto">
+                        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-6">
+                            {/* Header */}
+                            <div className="text-center mb-8">
+                                <div className="text-5xl mb-4 leaf-icon">🌿</div>
+                                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                                    Planeje Para Viver
+                                </h1>
+                                <h2 className="text-xl md:text-2xl font-semibold text-emerald-600 mb-4">
+                                    Descubra O Que Está Sabotando Suas Finanças
+                                </h2>
+                                <p className="text-gray-600 max-w-2xl mx-auto">
+                                    Este teste identifica os comportamentos inconscientes que estão impedindo você de sair das dívidas, 
+                                    economizar e construir sua reserva de emergência.
+                                </p>
+                            </div>
+
+                            {/* Progress */}
+                            <div className="mb-8">
+                                <div className="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Seção {currentSection + 1} de {sections.length}</span>
+                                    <span>{Math.round(progress)}% completo</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-3">
+                                    <div 
+                                        className="bg-emerald-600 h-3 rounded-full transition-all duration-300"
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Current Section */}
+                            <div className="mb-8">
+                                <div className="flex items-center mb-4 gap-4">
+                                    <div className="text-4xl">{currentSectionData.icon}</div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-800">{currentSectionData.title}</h2>
+                                        <p className="text-gray-600 mt-1">{currentSectionData.description}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Questions */}
+                            <div className="space-y-8">
+                                {currentSectionData.questions.map((question, qIndex) => (
+                                    <div key={question.id} className="bg-gray-50 rounded-xl p-6">
+                                        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                            {qIndex + 1}. {question.text}
+                                        </h3>
+                                        <div className="space-y-3">
+                                            {question.options.map((option) => (
+                                                <label
+                                                    key={option.value}
+                                                    className={`flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                                                        answers[question.id] === option.value
+                                                            ? 'border-emerald-600 bg-emerald-50'
+                                                            : 'border-gray-200 hover:border-emerald-300 bg-white'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name={question.id}
+                                                        value={option.value}
+                                                        checked={answers[question.id] === option.value}
+                                                        onChange={() => handleAnswer(question.id, option.value)}
+                                                        className="mt-1 w-5 h-5 text-emerald-600 flex-shrink-0"
+                                                    />
+                                                    <span className="ml-3 text-gray-700">{option.label}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Navigation */}
+                            <div className="flex gap-4 mt-8">
+                                <button
+                                    onClick={() => setCurrentSection(Math.max(0, currentSection - 1))}
+                                    disabled={currentSection === 0}
+                                    className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+                                        currentSection === 0
+                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            : 'bg-gray-600 text-white hover:bg-gray-700'
+                                    }`}
+                                >
+                                    ← Anterior
+                                </button>
+                                
+                                <button
+                                    onClick={() => {
+                                        if (currentSection < sections.length - 1) {
+                                            setCurrentSection(currentSection + 1);
+                                        } else {
+                                            setShowResults(true);
+                                            window.scrollTo(0, 0);
+                                        }
+                                    }}
+                                    disabled={!allQuestionsAnswered}
+                                    className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors ${
+                                        !allQuestionsAnswered
+                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                    }`}
+                                >
+                                    {currentSection === sections.length - 1 ? 'Ver Meus Resultados ✓' : 'Próxima →'}
+                                </button>
+                            </div>
+
+                            {!allQuestionsAnswered && (
+                                <p className="text-center text-sm text-amber-600 mt-4">
+                                    ⚠️ Responda todas as perguntas para continuar
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Info Box */}
+                        <div className="bg-white rounded-xl shadow-lg p-6">
+                            <h3 className="font-semibold text-gray-800 mb-3">Por que este teste funciona?</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                                Este diagnóstico é baseado em décadas de pesquisa em Economia Comportamental por ganhadores 
+                                do Nobel como Daniel Kahneman e Richard Thaler. Ele revela os vieses psicológicos que 
+                                fazem você gastar mais do que deveria e sabotar seus próprios objetivos.
+                            </p>
+                            <p className="text-xs text-gray-500 italic">
+                                ⏱️ Tempo estimado: 10-15 minutos • 🔒 Suas respostas são privadas e não são salvas
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<DiagnosticApp />, document.getElementById('app'));
+    </script>
+</body>
+</html>

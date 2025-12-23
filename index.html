@@ -20,6 +20,7 @@
     </script>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
@@ -94,6 +95,147 @@
             const [showResults, setShowResults] = useState(false);
             const [emailSent, setEmailSent] = useState(false);
             const [userEmail, setUserEmail] = useState('');
+
+            const generatePDF = () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const results = calculateResults();
+                const overallScore = Object.values(results).reduce((sum, r) => sum + r.score, 0) / Object.keys(results).length;
+                
+                let yPos = 20;
+                
+                // Header
+                doc.setFontSize(20);
+                doc.setTextColor(16, 185, 129);
+                doc.text('🌿 Planeje Para Viver', 105, yPos, { align: 'center' });
+                
+                yPos += 10;
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 0);
+                doc.text('Diagnóstico de Finanças Comportamentais', 105, yPos, { align: 'center' });
+                
+                yPos += 15;
+                doc.setFontSize(12);
+                doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, yPos, { align: 'center' });
+                
+                // Score Geral
+                yPos += 15;
+                doc.setFillColor(16, 185, 129);
+                doc.rect(15, yPos - 5, 180, 25, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(14);
+                doc.text('SCORE GERAL DE COMPORTAMENTO FINANCEIRO', 105, yPos + 3, { align: 'center' });
+                doc.setFontSize(24);
+                doc.text(`${overallScore.toFixed(1)}/5.0`, 105, yPos + 13, { align: 'center' });
+                
+                yPos += 30;
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(10);
+                const interpretation = overallScore >= 4 ? 'Muitos padrões prejudicando suas finanças' : 
+                                     overallScore >= 3 ? 'Alguns comportamentos para melhorar' : 
+                                     'Bom controle dos comportamentos financeiros';
+                doc.text(interpretation, 105, yPos, { align: 'center' });
+                
+                // Resultados por Viés
+                yPos += 15;
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                
+                Object.entries(results).forEach(([biasId, data]) => {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    // Título do viés
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`${data.icon} ${data.title}`, 15, yPos);
+                    
+                    // Badge do nível
+                    const badgeColor = data.level === 'Alto' ? [239, 68, 68] : 
+                                      data.level === 'Moderado' ? [234, 179, 8] : 
+                                      [34, 197, 94];
+                    doc.setFillColor(...badgeColor);
+                    doc.roundedRect(160, yPos - 4, 30, 6, 2, 2, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(9);
+                    doc.text(data.level, 175, yPos, { align: 'center' });
+                    
+                    yPos += 7;
+                    doc.setTextColor(100, 100, 100);
+                    doc.setFontSize(9);
+                    doc.setFont(undefined, 'normal');
+                    const descLines = doc.splitTextToSize(data.description, 180);
+                    doc.text(descLines, 15, yPos);
+                    yPos += descLines.length * 5;
+                    
+                    // Score
+                    yPos += 3;
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(`Score: ${data.score.toFixed(1)}/5.0`, 15, yPos);
+                    
+                    // Recomendações
+                    yPos += 8;
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Ações Práticas:', 15, yPos);
+                    doc.setFont(undefined, 'normal');
+                    
+                    const recs = getRecommendations(biasId, data.level);
+                    recs.forEach((rec, idx) => {
+                        yPos += 6;
+                        if (yPos > 270) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                        const recLines = doc.splitTextToSize(`${idx + 1}. ${rec}`, 175);
+                        doc.text(recLines, 20, yPos);
+                        yPos += (recLines.length - 1) * 5;
+                    });
+                    
+                    yPos += 10;
+                    doc.setDrawColor(200, 200, 200);
+                    doc.line(15, yPos, 195, yPos);
+                    yPos += 8;
+                });
+                
+                // Rodapé
+                if (yPos > 240) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                yPos += 10;
+                doc.setFillColor(240, 253, 244);
+                doc.rect(15, yPos - 5, 180, 35, 'F');
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'bold');
+                doc.text('Por Onde Começar?', 20, yPos + 3);
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+                const steps = [
+                    '1. Escolha o comportamento com maior score',
+                    '2. Implemente APENAS 1 recomendação esta semana',
+                    '3. Anote os resultados por 7 dias',
+                    '4. Refaça este teste em 2 meses'
+                ];
+                steps.forEach((step, idx) => {
+                    doc.text(step, 20, yPos + 10 + (idx * 5));
+                });
+                
+                // Footer final
+                const totalPages = doc.internal.pages.length - 1;
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text('Diagnóstico criado por Mara Alves | 🌿 Planeje para viver', 105, 285, { align: 'center' });
+                    doc.text('"Não sobreviva. Viva."', 105, 290, { align: 'center' });
+                }
+                
+                doc.save(`Diagnostico-Planeje-Para-Viver-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`);
+            };
 
             const sections = [
                 {
@@ -547,14 +689,16 @@
                                         Vou te enviar o resumo completo + dicas extras + materiais de educação financeira
                                     </p>
                                     <form 
-                                        action="https://formsubmit.co/maraalves.ftg@gmail.com" 
+                                        action="https://formsubmit.co/SEU-EMAIL@EXAMPLE.COM" 
                                         method="POST"
+                                        target="_blank"
                                         onSubmit={handleEmailSubmit}
                                         className="flex gap-3 flex-wrap"
                                     >
                                         <input type="hidden" name="_subject" value="Novo Diagnóstico - Planeje Para Viver" />
                                         <input type="hidden" name="_template" value="table" />
                                         <input type="hidden" name="_captcha" value="false" />
+                                        <input type="hidden" name="_next" value={window.location.href} />
                                         <input 
                                             type="email" 
                                             name="email"
@@ -604,10 +748,10 @@
                                         💬 Entre em Contato
                                     </a>
                                     <button 
-                                        onClick={() => window.print()}
-                                        className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+                                        onClick={generatePDF}
+                                        className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-semibold"
                                     >
-                                        🖨️ Imprimir PDF
+                                        📄 Baixar PDF
                                     </button>
                                 </div>
                             </div>
@@ -634,7 +778,7 @@
                             <div className="mt-12 pt-8 border-t border-gray-200 text-center">
                                 <div className="text-2xl mb-3">🌿</div>
                                 <p className="text-xl font-bold text-gray-800 mb-1">
-                                    "Planeje para viver o que realmente importa"
+                                     "Planeje para viver o que realmente importa"
                                 </p>
                                 <p className="text-sm text-gray-600 mb-4">
                                     Diagnóstico criado por <strong>Mara Alves</strong><br />
@@ -799,7 +943,4 @@
         ReactDOM.render(<DiagnosticApp />, document.getElementById('app'));
     </script>
 </body>
-
 </html>
-
-

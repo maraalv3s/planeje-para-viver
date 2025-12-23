@@ -677,58 +677,7 @@
                                     <li>Refaça este teste em 2 meses para ver sua evolução</li>
                                 </ol>
                             </div>
-  <!--
-                          {/* Captura de Email Opcional */}
-                            {!emailSent ? (
-                                <div className="bg-white border-2 border-emerald-200 rounded-xl p-6 mb-6">
-                                    <h3 className="font-bold text-gray-800 mb-2 flex items-center">
-                                        <span className="mr-2">📧</span>
-                                        Quer receber uma cópia por email?
-                                    </h3>
-                                    <p className="text-sm text-gray-600 mb-4">
-                                        Vou te enviar o resumo completo + dicas extras + materiais de educação financeira
-                                    </p>
-                                    <form 
-                                        action="https://formsubmit.co/SEU-EMAIL@EXAMPLE.COM" 
-                                        method="POST"
-                                        target="_blank"
-                                        onSubmit={handleEmailSubmit}
-                                        className="flex gap-3 flex-wrap"
-                                    >
-                                        <input type="hidden" name="_subject" value="Novo Diagnóstico - Planeje Para Viver" />
-                                        <input type="hidden" name="_template" value="table" />
-                                        <input type="hidden" name="_captcha" value="false" />
-                                        <input type="hidden" name="_next" value={window.location.href} />
-                                        <input 
-                                            type="email" 
-                                            name="email"
-                                            value={userEmail}
-                                            onChange={(e) => setUserEmail(e.target.value)}
-                                            placeholder="seu-email@exemplo.com"
-                                            required
-                                            className="flex-1 min-w-[200px] px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-emerald-500 focus:outline-none"
-                                        />
-                                        <textarea 
-                                            name="resultados" 
-                                            value={`Score Geral: ${overallScore.toFixed(1)}/5.0\n\n` + Object.entries(results).map(([id, data]) => `${data.icon} ${data.title}: ${data.score.toFixed(1)}/5.0 (${data.level})`).join('\n')}
-                                            hidden
-                                        />
-                                        <button 
-                                            type="submit"
-                                            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold"
-                                        >
-                                            Enviar Cópia
-                                        </button>
-                                    </form>
-                                </div>
-                            ) : (
-                                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 mb-6 text-center">
-                                    <span className="text-4xl mb-2 block">✅</span>
-                                    <p className="font-semibold text-gray-800">Email enviado com sucesso!</p>
-                                    <p className="text-sm text-gray-600">Verifique sua caixa de entrada</p>
-                                </div>
-                            )} 
-      -->
+
 
                             {/* CTA Final */}
                             <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-6 mb-6 text-center">
@@ -945,4 +894,5 @@
     </script>
 </body>
 </html>
+
 
